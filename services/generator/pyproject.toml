@@ -1,7 +1,7 @@
 [project]
 name = "fraudguard-generator"
 version = "0.1.0"
-description = "Add your description here"
+description = "Synthetic bank transaction generator that streams events to Kafka for FraudGuard"
 readme = "README.md"
 authors = [
     { name = "Omar Elkersh", email = "85870525+omarelkersh@users.noreply.github.com" }
