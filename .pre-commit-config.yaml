@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace      # removes spaces at the end of lines
+      - id: end-of-file-fixer        # makes every file end with exactly one newline
+      - id: check-yaml               # YAML files must be valid
+      - id: check-toml               # TOML files (pyproject.toml) must be valid
+      - id: check-added-large-files  # blocks accidentally committing big files (e.g., datasets)
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.10                    # keep in sync with the ruff version in uv.lock
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
