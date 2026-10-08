@@ -1,4 +1,4 @@
-from datetime import datetime, timezone 
+from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import uuid4
 
@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from fraudguard_generator.models import Transaction
 
+
 def valid_transaction_data() -> dict:
     return {
         "transaction_id": uuid4(),
@@ -14,10 +15,11 @@ def valid_transaction_data() -> dict:
         "merchant_id": "MER-87654321",
         "amount": Decimal("100.00"),
         "currency": "USD",
-        "timestamp": datetime(2026,10,7,12,0,tzinfo=timezone.utc),
+        "timestamp": datetime(2026, 10, 7, 12, 0, tzinfo=UTC),
         "channel": "online",
         "country": "US",
     }
+
 
 def test_valid_transaction_is_accepted():
     data = valid_transaction_data()
@@ -31,7 +33,8 @@ def test_valid_transaction_is_accepted():
     assert transaction.channel == data["channel"]
     assert transaction.country == data["country"]
 
-@pytest.mark.parametrize("bad_amount",["0","-5.00", "10.123"])
+
+@pytest.mark.parametrize("bad_amount", ["0", "-5.00", "10.123"])
 def test_invalid_amount_is_rejected(bad_amount):
     data = valid_transaction_data()
     data["amount"] = Decimal(bad_amount)
@@ -41,23 +44,31 @@ def test_invalid_amount_is_rejected(bad_amount):
 
 def test_invalid_timestamp_is_rejected():
     data = valid_transaction_data()
-    data["timestamp"] = datetime(2026,10,7,12,0)  # naive datetime
+    data["timestamp"] = datetime(2026, 10, 7, 12, 0)  # naive datetime
     with pytest.raises(ValidationError):
         Transaction(**data)
 
-@pytest.mark.parametrize("bad_account_id", ["acc-00012345", "CAC-09263456", "aCC-87612354", "ACC-1234567", "ACC-123456789"])
+
+@pytest.mark.parametrize(
+    "bad_account_id",
+    ["acc-00012345", "CAC-09263456", "aCC-87612354", "ACC-1234567", "ACC-123456789"],
+)
 def test_invalid_account_id_is_rejected(bad_account_id):
     data = valid_transaction_data()
     data["account_id"] = bad_account_id
     with pytest.raises(ValidationError):
         Transaction(**data)
 
-@pytest.mark.parametrize("bad_merchant_id", ["mer-00012345", "MER-1234567800", "invalid-merchant-id"])
+
+@pytest.mark.parametrize(
+    "bad_merchant_id", ["mer-00012345", "MER-1234567800", "invalid-merchant-id"]
+)
 def test_invalid_merchant_id_is_rejected(bad_merchant_id):
     data = valid_transaction_data()
     data["merchant_id"] = bad_merchant_id
     with pytest.raises(ValidationError):
         Transaction(**data)
+
 
 @pytest.mark.parametrize("bad_currency", ["GBP", "NTD", "JPY"])
 def test_invalid_currency_is_rejected(bad_currency):
@@ -66,6 +77,7 @@ def test_invalid_currency_is_rejected(bad_currency):
     with pytest.raises(ValidationError):
         Transaction(**data)
 
+
 @pytest.mark.parametrize("bad_channel", ["invalid_channel", "INVALID-CHANNEL"])
 def test_invalid_channel_is_rejected(bad_channel):
     data = valid_transaction_data()
@@ -73,7 +85,8 @@ def test_invalid_channel_is_rejected(bad_channel):
     with pytest.raises(ValidationError):
         Transaction(**data)
 
-@pytest.mark.parametrize("bad_country", ["USA", "uss", "U!",""])
+
+@pytest.mark.parametrize("bad_country", ["USA", "uss", "U!", ""])
 def test_invalid_country_is_rejected(bad_country):
     data = valid_transaction_data()
     data["country"] = bad_country
