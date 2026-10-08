@@ -10,8 +10,17 @@ members = ["services/*"]
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "ruff>=0.16.10",
 ]
 
 [tool.pytest.ini_options]
 addopts = "--import-mode=importlib"
 testpaths = ["services"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["services/*/src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
