@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7          # get the repo's code onto the runner
 
-      - uses: astral-sh/setup-uv@v10       # install uv (it reads .python-version for Python)
+      - uses: astral-sh/setup-uv@v10.3.0       # install uv (it reads .python-version for Python)
         with:
           enable-cache: true               # cache downloaded packages between runs
 
