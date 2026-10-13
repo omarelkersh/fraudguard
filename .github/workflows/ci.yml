@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]        # every push to main
+  pull_request:             # every PR, to any branch
+
+permissions:
+  contents: read            # least privilege: CI can only READ the repo
+
+concurrency:                # a new push cancels the still-running old run → saves time
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7          # get the repo's code onto the runner
+
+      - uses: astral-sh/setup-uv@v10       # install uv (it reads .python-version for Python)
+        with:
+          enable-cache: true               # cache downloaded packages between runs
+
+      - name: Install dependencies
+        run: uv sync --all-packages --frozen
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Run tests
+        run: uv run --all-packages pytest
+
+  build-image:
+    needs: lint-and-test                   # only runs if lint-and-test passed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4   # Docker's modern builder (needed for caching)
+
+      - name: Build generator image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: services/generator/Dockerfile
+          push: false                      # only prove it builds; we publish images in Phase 4
+          tags: fraudguard-generator:ci
+          cache-from: type=gha             # reuse layers from previous CI runs
+          cache-to: type=gha,mode=max
