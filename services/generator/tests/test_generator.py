@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from decimal import Decimal
 
 from fraudguard_generator.generator import TransactionGenerator
 from fraudguard_generator.models import Transaction
@@ -39,3 +40,22 @@ def test_most_transactions_happen_in_home_country():
 def test_normal_transactions_are_labelled_legit():
     results = generate(seed=3, n=100)
     assert all(label is False for _, label in results)
+
+
+def test_foreign_atm_withdrawal_is_labelled_fraud():
+    generator = TransactionGenerator(seed=5)
+    for _ in range(100):
+        _, label = generator.foreign_atm_withdrawal(TIMESTAMP)
+        assert label is True
+
+
+def test_foreign_atm_withdrawal_breaks_customer_habits():
+    generator = TransactionGenerator(seed=5)
+    accounts = {a.account_id: a for a in generator.accounts}
+
+    for _ in range(100):
+        tx, _ = generator.foreign_atm_withdrawal(TIMESTAMP)
+        account = accounts[tx.account_id]
+        assert tx.channel == "atm"  # T1
+        assert tx.country != account.home_country  # T2
+        assert tx.amount >= Decimal(str(account.typical_amount)) * 5  # T3: at least 5×?

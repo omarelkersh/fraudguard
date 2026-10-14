@@ -61,6 +61,21 @@ class TransactionGenerator:
         transaction = self._build_transaction(account, amount, timestamp, channel, country)
         return transaction, False
 
+    def foreign_atm_withdrawal(self, timestamp: datetime) -> tuple[Transaction, bool]:
+        """Fraud pattern: a large ATM cash withdrawal abroad (stolen or skimmed card)."""
+        account = self._rng.choice(self.accounts)
+
+        # Any country EXCEPT the customer's home country
+        foreign_countries = [c for c in COUNTRY_CURRENCY if c != account.home_country]
+        country = self._rng.choice(foreign_countries)
+
+        # 5 to 10 times the customer's typical spend
+        multiplier = self._rng.uniform(5, 10)
+        amount = Decimal(str(round(account.typical_amount * multiplier, 2)))
+
+        transaction = self._build_transaction(account, amount, timestamp, "atm", country)
+        return transaction, True
+
     def _build_transaction(
         self,
         account: AccountProfile,
