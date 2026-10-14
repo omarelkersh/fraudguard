@@ -57,14 +57,26 @@ class TransactionGenerator:
         else:
             country = self._rng.choice(list(COUNTRY_CURRENCY))
 
-        transaction = Transaction(
+        channel = self._rng.choices(CHANNELS, weights=CHANNEL_WEIGHTS)[0]
+        transaction = self._build_transaction(account, amount, timestamp, channel, country)
+        return transaction, False
+
+    def _build_transaction(
+        self,
+        account: AccountProfile,
+        amount: Decimal,
+        timestamp: datetime,
+        channel: str,
+        country: str,
+    ) -> Transaction:
+        """Build one Transaction for an account. Shared by normal and fraud transactions."""
+        return Transaction(
             transaction_id=uuid.UUID(int=self._rng.getrandbits(128), version=4),
             account_id=account.account_id,
             merchant_id=self._rng.choice(self.merchant_ids),
             amount=amount,
             currency=account.currency,
             timestamp=timestamp,
-            channel=self._rng.choices(CHANNELS, weights=CHANNEL_WEIGHTS)[0],
+            channel=channel,
             country=country,
         )
-        return transaction, False
