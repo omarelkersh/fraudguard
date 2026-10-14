@@ -1,5 +1,6 @@
 import random
 import uuid
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -111,3 +112,26 @@ class TransactionGenerator:
             channel=channel,
             country=country,
         )
+
+    def stream(
+        self, start: datetime, n: int, fraud_rate: float = 0.01
+    ) -> Iterator[tuple[Transaction, bool]]:
+        timestamp = start
+        produced = 0
+
+        while produced < n:
+            timestamp += timedelta(seconds=self._rng.expovariate(0.5))  # random gap, about 2s
+
+            if self._rng.random() < fraud_rate:
+                if self._rng.random() < 0.5:
+                    events = [self.foreign_atm_withdrawal(timestamp)]
+                else:
+                    events = self.card_testing_burst(timestamp)
+            else:
+                events = [self.normal_transaction(timestamp)]
+
+            for event in events:
+                yield event
+                produced += 1
+                if produced == n:
+                    return

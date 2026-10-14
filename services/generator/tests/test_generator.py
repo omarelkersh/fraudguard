@@ -84,3 +84,26 @@ def test_card_testing_burst_happens_within_minutes():
     timestamps = [tx.timestamp for tx in transactions]
     assert timestamps == sorted(timestamps)
     assert timestamps[-1] - timestamps[0] <= timedelta(minutes=5)
+
+
+def test_stream_produces_exactly_n_transactions():
+    generator = TransactionGenerator(seed=11)
+    assert len(list(generator.stream(TIMESTAMP, n=500))) == 500
+
+
+def test_stream_without_fraud_has_no_fraud_labels():
+    generator = TransactionGenerator(seed=11)
+    labels = [label for _, label in generator.stream(TIMESTAMP, n=500, fraud_rate=0.0)]
+    assert not any(labels)
+
+
+def test_stream_with_only_fraud_has_only_fraud_labels():
+    generator = TransactionGenerator(seed=11)
+    labels = [label for _, label in generator.stream(TIMESTAMP, n=500, fraud_rate=1.0)]
+    assert all(labels)
+
+
+def test_stream_is_reproducible():
+    first = list(TransactionGenerator(seed=11).stream(TIMESTAMP, n=200, fraud_rate=0.05))
+    second = list(TransactionGenerator(seed=11).stream(TIMESTAMP, n=200, fraud_rate=0.05))
+    assert first == second
