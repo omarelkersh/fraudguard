@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from fraudguard_generator.generator import TransactionGenerator
@@ -59,3 +59,28 @@ def test_foreign_atm_withdrawal_breaks_customer_habits():
         assert tx.channel == "atm"  # T1
         assert tx.country != account.home_country  # T2
         assert tx.amount >= Decimal(str(account.typical_amount)) * 5  # T3: at least 5×?
+
+
+def test_card_testing_burst_has_requested_size_and_labels():
+    generator = TransactionGenerator(seed=9)
+    burst = generator.card_testing_burst(TIMESTAMP, n=8)
+    assert len(burst) == 8
+    assert all(label is True for _, label in burst)
+
+
+def test_card_testing_burst_is_tiny_online_payments_from_one_account():
+    generator = TransactionGenerator(seed=9)
+    transactions = [tx for tx, _ in generator.card_testing_burst(TIMESTAMP, n=8)]
+
+    assert len({tx.account_id for tx in transactions}) == 1
+    assert all(tx.channel == "online" for tx in transactions)
+    assert all(tx.amount <= Decimal("2.00") for tx in transactions)
+
+
+def test_card_testing_burst_happens_within_minutes():
+    generator = TransactionGenerator(seed=9)
+    transactions = [tx for tx, _ in generator.card_testing_burst(TIMESTAMP, n=8)]
+
+    timestamps = [tx.timestamp for tx in transactions]
+    assert timestamps == sorted(timestamps)
+    assert timestamps[-1] - timestamps[0] <= timedelta(minutes=5)

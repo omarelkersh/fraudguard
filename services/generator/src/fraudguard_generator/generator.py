@@ -1,7 +1,7 @@
 import random
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from fraudguard_generator.models import Transaction
@@ -75,6 +75,22 @@ class TransactionGenerator:
 
         transaction = self._build_transaction(account, amount, timestamp, "atm", country)
         return transaction, True
+
+    def card_testing_burst(self, start: datetime, n: int = 8) -> list[tuple[Transaction, bool]]:
+        """Fraud pattern: many tiny online payments seconds apart, testing a stolen card."""
+        account = self._rng.choice(self.accounts)
+        burst: list[tuple[Transaction, bool]] = []
+        timestamp = start
+
+        for _ in range(n):
+            amount = Decimal(str(round(self._rng.uniform(0.50, 2.00), 2)))
+            transaction = self._build_transaction(
+                account, amount, timestamp, "online", account.home_country
+            )
+            burst.append((transaction, True))
+            timestamp += timedelta(seconds=self._rng.randint(5, 40))
+
+        return burst
 
     def _build_transaction(
         self,
