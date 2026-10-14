@@ -56,9 +56,9 @@ def test_foreign_atm_withdrawal_breaks_customer_habits():
     for _ in range(100):
         tx, _ = generator.foreign_atm_withdrawal(TIMESTAMP)
         account = accounts[tx.account_id]
-        assert tx.channel == "atm"  # T1
-        assert tx.country != account.home_country  # T2
-        assert tx.amount >= Decimal(str(account.typical_amount)) * 5  # T3: at least 5×?
+        assert tx.channel == "atm"
+        assert tx.country != account.home_country
+        assert tx.amount >= Decimal(str(account.typical_amount)) * 5
 
 
 def test_card_testing_burst_has_requested_size_and_labels():
