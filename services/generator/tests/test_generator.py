@@ -1,4 +1,5 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 
 from fraudguard_generator.generator import TransactionGenerator
 from fraudguard_generator.models import Transaction
@@ -39,3 +40,70 @@ def test_most_transactions_happen_in_home_country():
 def test_normal_transactions_are_labelled_legit():
     results = generate(seed=3, n=100)
     assert all(label is False for _, label in results)
+
+
+def test_foreign_atm_withdrawal_is_labelled_fraud():
+    generator = TransactionGenerator(seed=5)
+    for _ in range(100):
+        _, label = generator.foreign_atm_withdrawal(TIMESTAMP)
+        assert label is True
+
+
+def test_foreign_atm_withdrawal_breaks_customer_habits():
+    generator = TransactionGenerator(seed=5)
+    accounts = {a.account_id: a for a in generator.accounts}
+
+    for _ in range(100):
+        tx, _ = generator.foreign_atm_withdrawal(TIMESTAMP)
+        account = accounts[tx.account_id]
+        assert tx.channel == "atm"
+        assert tx.country != account.home_country
+        assert tx.amount >= Decimal(str(account.typical_amount)) * 5
+
+
+def test_card_testing_burst_has_requested_size_and_labels():
+    generator = TransactionGenerator(seed=9)
+    burst = generator.card_testing_burst(TIMESTAMP, n=8)
+    assert len(burst) == 8
+    assert all(label is True for _, label in burst)
+
+
+def test_card_testing_burst_is_tiny_online_payments_from_one_account():
+    generator = TransactionGenerator(seed=9)
+    transactions = [tx for tx, _ in generator.card_testing_burst(TIMESTAMP, n=8)]
+
+    assert len({tx.account_id for tx in transactions}) == 1
+    assert all(tx.channel == "online" for tx in transactions)
+    assert all(tx.amount <= Decimal("2.00") for tx in transactions)
+
+
+def test_card_testing_burst_happens_within_minutes():
+    generator = TransactionGenerator(seed=9)
+    transactions = [tx for tx, _ in generator.card_testing_burst(TIMESTAMP, n=8)]
+
+    timestamps = [tx.timestamp for tx in transactions]
+    assert timestamps == sorted(timestamps)
+    assert timestamps[-1] - timestamps[0] <= timedelta(minutes=5)
+
+
+def test_stream_produces_exactly_n_transactions():
+    generator = TransactionGenerator(seed=11)
+    assert len(list(generator.stream(TIMESTAMP, n=500))) == 500
+
+
+def test_stream_without_fraud_has_no_fraud_labels():
+    generator = TransactionGenerator(seed=11)
+    labels = [label for _, label in generator.stream(TIMESTAMP, n=500, fraud_rate=0.0)]
+    assert not any(labels)
+
+
+def test_stream_with_only_fraud_has_only_fraud_labels():
+    generator = TransactionGenerator(seed=11)
+    labels = [label for _, label in generator.stream(TIMESTAMP, n=500, fraud_rate=1.0)]
+    assert all(labels)
+
+
+def test_stream_is_reproducible():
+    first = list(TransactionGenerator(seed=11).stream(TIMESTAMP, n=200, fraud_rate=0.05))
+    second = list(TransactionGenerator(seed=11).stream(TIMESTAMP, n=200, fraud_rate=0.05))
+    assert first == second

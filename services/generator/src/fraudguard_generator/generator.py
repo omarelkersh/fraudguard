@@ -1,7 +1,8 @@
 import random
 import uuid
+from collections.abc import Iterator
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from fraudguard_generator.models import Transaction
@@ -57,14 +58,80 @@ class TransactionGenerator:
         else:
             country = self._rng.choice(list(COUNTRY_CURRENCY))
 
-        transaction = Transaction(
+        channel = self._rng.choices(CHANNELS, weights=CHANNEL_WEIGHTS)[0]
+        transaction = self._build_transaction(account, amount, timestamp, channel, country)
+        return transaction, False
+
+    def foreign_atm_withdrawal(self, timestamp: datetime) -> tuple[Transaction, bool]:
+        """Fraud pattern: a large ATM cash withdrawal abroad (stolen or skimmed card)."""
+        account = self._rng.choice(self.accounts)
+
+        # Any country EXCEPT the customer's home country
+        foreign_countries = [c for c in COUNTRY_CURRENCY if c != account.home_country]
+        country = self._rng.choice(foreign_countries)
+
+        # 5 to 10 times the customer's typical spend
+        multiplier = self._rng.uniform(5, 10)
+        amount = Decimal(str(round(account.typical_amount * multiplier, 2)))
+
+        transaction = self._build_transaction(account, amount, timestamp, "atm", country)
+        return transaction, True
+
+    def card_testing_burst(self, start: datetime, n: int = 8) -> list[tuple[Transaction, bool]]:
+        """Fraud pattern: many tiny online payments seconds apart, testing a stolen card."""
+        account = self._rng.choice(self.accounts)
+        burst: list[tuple[Transaction, bool]] = []
+        timestamp = start
+
+        for _ in range(n):
+            amount = Decimal(str(round(self._rng.uniform(0.50, 2.00), 2)))
+            transaction = self._build_transaction(
+                account, amount, timestamp, "online", account.home_country
+            )
+            burst.append((transaction, True))
+            timestamp += timedelta(seconds=self._rng.randint(5, 40))
+
+        return burst
+
+    def _build_transaction(
+        self,
+        account: AccountProfile,
+        amount: Decimal,
+        timestamp: datetime,
+        channel: str,
+        country: str,
+    ) -> Transaction:
+        """Build one Transaction for an account. Shared by normal and fraud transactions."""
+        return Transaction(
             transaction_id=uuid.UUID(int=self._rng.getrandbits(128), version=4),
             account_id=account.account_id,
             merchant_id=self._rng.choice(self.merchant_ids),
             amount=amount,
             currency=account.currency,
             timestamp=timestamp,
-            channel=self._rng.choices(CHANNELS, weights=CHANNEL_WEIGHTS)[0],
+            channel=channel,
             country=country,
         )
-        return transaction, False
+
+    def stream(
+        self, start: datetime, n: int, fraud_rate: float = 0.01
+    ) -> Iterator[tuple[Transaction, bool]]:
+        timestamp = start
+        produced = 0
+
+        while produced < n:
+            timestamp += timedelta(seconds=self._rng.expovariate(0.5))  # random gap, about 2s
+
+            if self._rng.random() < fraud_rate:
+                if self._rng.random() < 0.5:
+                    events = [self.foreign_atm_withdrawal(timestamp)]
+                else:
+                    events = self.card_testing_burst(timestamp)
+            else:
+                events = [self.normal_transaction(timestamp)]
+
+            for event in events:
+                yield event
+                produced += 1
+                if produced == n:
+                    return
