@@ -14,3 +14,11 @@ class Transaction(BaseModel):
     timestamp: AwareDatetime
     channel: Literal["atm", "card_present", "online", "transfer"]
     country: str = Field(pattern=r"^[A-Z]{2}$")
+
+
+class FraudLabel(BaseModel):
+    """Ground truth for one transaction. Arrives later than the transaction itself."""
+
+    transaction_id: UUID  # same type as Transaction.transaction_id
+    is_fraud: bool
+    labelled_at: AwareDatetime  # a datetime that MUST have a timezone

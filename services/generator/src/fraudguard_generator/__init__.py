@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from confluent_kafka import Producer
 
 from fraudguard_generator.generator import TransactionGenerator
-from fraudguard_generator.producer import publish
+from fraudguard_generator.producer import publish, publish_labels
 
 
 def main() -> None:
@@ -12,6 +12,10 @@ def main() -> None:
     n = int(os.environ.get("N_TRANSACTIONS", "1000"))
 
     producer = Producer({"bootstrap.servers": bootstrap})
-    events = TransactionGenerator(seed=42).stream(datetime.now(UTC), n=n, fraud_rate=0.02)
+    generator = TransactionGenerator(seed=42)
+    events = list(generator.stream(datetime.now(UTC), n=n, fraud_rate=0.02))
+
     sent = publish(producer, "transactions", events)
-    print(f"Sent {sent} transactions to {bootstrap}")
+    labels = [generator.label_for(tx, is_fraud) for tx, is_fraud in events]
+    labelled = publish_labels(producer, "fraud_labels", labels)  # the labels topic name
+    print(f"Sent {sent} transactions and {labelled} labels to {bootstrap}")

@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from confluent_kafka import Producer
 
-from fraudguard_generator.models import Transaction
+from fraudguard_generator.models import FraudLabel, Transaction
 
 
 def publish(producer: Producer, topic: str, events: Iterable[tuple[Transaction, bool]]) -> int:
@@ -13,4 +13,15 @@ def publish(producer: Producer, topic: str, events: Iterable[tuple[Transaction, 
         producer.poll(0)
         sent += 1
     producer.flush()  # wait until Kafka has received everything
+    return sent
+
+
+def publish_labels(producer: Producer, topic: str, labels: Iterable[FraudLabel]) -> int:
+    """Send fraud labels to their own topic, keyed by transaction_id."""
+    sent = 0
+    for label in labels:
+        producer.produce(topic, key=str(label.transaction_id), value=label.model_dump_json())
+        producer.poll(0)
+        sent += 1
+    producer.flush()
     return sent

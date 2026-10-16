@@ -4,7 +4,7 @@ up:
 	docker compose up -d --wait kafka storage
 
 generate:
-	docker compose run --rm generator
+	docker compose run --rm --build generator
 
 bronze:
 	docker compose run --rm streaming

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from fraudguard_generator.models import Transaction
+from fraudguard_generator.models import FraudLabel, Transaction
 
 
 @dataclass(frozen=True)
@@ -135,3 +135,15 @@ class TransactionGenerator:
                 produced += 1
                 if produced == n:
                     return
+
+    def label_for(self, transaction: Transaction, is_fraud: bool) -> FraudLabel:
+        """Fraud is reported 1-30 days later; legit is confirmed after a 60-day dispute window."""
+        if is_fraud:
+            delay = timedelta(days=self._rng.uniform(1, 30))
+        else:
+            delay = timedelta(days=60)
+        return FraudLabel(
+            transaction_id=transaction.transaction_id,
+            is_fraud=is_fraud,
+            labelled_at=transaction.timestamp + delay,
+        )
