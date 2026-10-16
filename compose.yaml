@@ -28,6 +28,15 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
-
+  generator:
+    build:
+      context: .
+      dockerfile: services/generator/Dockerfile
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092        # Kafka's INTERNAL address (name:port)
+      N_TRANSACTIONS: "1000"
+    depends_on:
+      kafka:
+        condition: service_healthy        # wait until Kafka is really ready
 volumes:
   kafka-data:
