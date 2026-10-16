@@ -1,0 +1,9 @@
+name: fraudguard
+version: "1.0.0"
+profile: fraudguard
+model-paths: ["models"]
+
+models:
+  fraudguard:
+    staging:
+      +materialized: view
