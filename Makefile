@@ -8,11 +8,16 @@ generate:
 
 bronze:
 	docker compose run --rm streaming
+	docker compose run --rm streaming /opt/spark/bin/spark-submit jobs/bronze_labels.py
 
 dbt:
 	cd pipelines/dbt && uv run --env-file ../../.env --group dbt dbt build --profiles-dir .
 
-pipeline: up generate bronze dbt
+train:
+	uv run --group ml python ml/train.py
+
+pipeline:
+	up generate bronze dbt
 
 down:
 	docker compose down
