@@ -47,8 +47,22 @@ services:
       RUSTFS_ACCESS_KEY: fraudguard
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
       RUSTFS_CONSOLE_ENABLE: "true"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data   # save data in the volume
+      KAFKA_NUM_PARTITIONS: 3               # new topics get 3 partitions
     volumes:
       - storage-data:/data
+
+  streaming:
+    build: services/streaming
+    env_file: .env                     # gives Spark the S3 password
+    volumes:
+      - ./services/streaming/jobs:/opt/spark/work-dir/jobs
+    command: ["/opt/spark/bin/spark-submit", "jobs/bronze_transactions.py"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+      storage:
+        condition: service_started
 
 volumes:
   kafka-data:
