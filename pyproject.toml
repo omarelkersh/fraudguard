@@ -6,6 +6,7 @@ dependencies = []
 
 [tool.uv.workspace]
 members = ["services/*"]
+exclude = ["services/streaming"]
 
 [dependency-groups]
 dev = [
