@@ -7,3 +7,5 @@ models:
   fraudguard:
     staging:
       +materialized: view
+    marts:
+      +materialized: table
