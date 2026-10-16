@@ -107,3 +107,11 @@ def test_stream_is_reproducible():
     first = list(TransactionGenerator(seed=11).stream(TIMESTAMP, n=200, fraud_rate=0.05))
     second = list(TransactionGenerator(seed=11).stream(TIMESTAMP, n=200, fraud_rate=0.05))
     assert first == second
+
+
+def test_label_always_arrives_after_the_transaction():
+    generator = TransactionGenerator(seed=21)
+    for tx, is_fraud in generator.stream(TIMESTAMP, n=200, fraud_rate=0.2):
+        label = generator.label_for(tx, is_fraud)
+        assert label.labelled_at > tx.timestamp
+        assert label.transaction_id == tx.transaction_id
