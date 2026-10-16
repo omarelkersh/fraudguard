@@ -38,5 +38,18 @@ services:
     depends_on:
       kafka:
         condition: service_healthy        # wait until Kafka is really ready
+  storage:
+    image: rustfs/rustfs:1.0.1
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # web console
+    environment:
+      RUSTFS_ACCESS_KEY: fraudguard
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - storage-data:/data
+
 volumes:
   kafka-data:
+  storage-data:
