@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_transactions
+    columns:
+      - name: transaction_id
+        data_tests: [not_null, unique]
+      - name: amount
+        data_tests: [not_null]
+      - name: channel
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["card_present", "online", "atm", "transfer"]
+      - name: currency
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["USD", "EUR", "EGP"]          # the 3 currencies your model allows

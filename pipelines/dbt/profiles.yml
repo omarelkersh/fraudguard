@@ -1,0 +1,15 @@
+fraudguard:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: warehouse.duckdb            # the database file
+      extensions: [httpfs, delta]       # read S3 + Delta tables
+      secrets:
+        - type: s3
+          key_id: fraudguard
+          secret: "{{ env_var('RUSTFS_SECRET_KEY') }}"   # read from .env, never hard-coded
+          endpoint: localhost:9000
+          url_style: path
+          use_ssl: false
+          region: us-east-1

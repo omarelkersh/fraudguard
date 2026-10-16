@@ -9,6 +9,9 @@ members = ["services/*"]
 exclude = ["services/streaming"]
 
 [dependency-groups]
+dbt = [
+    "dbt-duckdb>=1.11.0",
+]
 dev = [
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
