@@ -16,6 +16,9 @@ dbt:
 train:
 	uv run --group ml python ml/train.py
 
+promote:
+	uv run --group ml python ml/promote.py
+
 pipeline:
 	up generate bronze dbt
 
