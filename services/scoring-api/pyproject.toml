@@ -11,6 +11,7 @@ dependencies = [
     "fastapi>=0.143.3",
     "mlflow-skinny==3.17.1",
     "pandas>=3.0.6",
+    "prometheus-client>=0.26.0",
     "scikit-learn==1.9.1",
     "skops>=0.16.0",
     "uvicorn>=0.54.0",

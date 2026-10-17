@@ -1,0 +1,17 @@
+{
+  "title": "FraudGuard scoring API",
+  "uid": "fraudguard-api",
+  "refresh": "5s",
+  "time": {"from": "now-15m", "to": "now"},
+  "panels": [
+    {"type": "timeseries", "title": "Requests per second", "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+     "datasource": {"type": "prometheus", "uid": "prometheus"},
+     "targets": [{"expr": "sum(rate(fraudguard_predictions_total[1m]))", "refId": "A"}]},
+    {"type": "timeseries", "title": "Fraud rate", "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+     "datasource": {"type": "prometheus", "uid": "prometheus"},
+     "targets": [{"expr": "sum(rate(fraudguard_predictions_total{is_fraud=\"True\"}[1m])) / sum(rate(fraudguard_predictions_total[1m]))", "refId": "A"}]},
+    {"type": "timeseries", "title": "p95 latency (seconds)", "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+     "datasource": {"type": "prometheus", "uid": "prometheus"},
+     "targets": [{"expr": "histogram_quantile(0.95, sum(rate(fraudguard_score_latency_seconds_bucket[1m])) by (le))", "refId": "A"}]}
+  ]
+}
