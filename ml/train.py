@@ -39,4 +39,5 @@ with mlflow.start_run():
         name="model",
         input_example=X_test.head(3),
         skops_trusted_types=["sklearn.tree._tree.Tree"],
+        registered_model_name="fraud-detector",
     )
