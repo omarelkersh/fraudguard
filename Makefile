@@ -19,6 +19,9 @@ train:
 promote:
 	uv run --group ml python ml/promote.py
 
+drift:
+	uv run --group ml python ml/check_drift.py
+
 pipeline:
 	up generate bronze dbt
 
