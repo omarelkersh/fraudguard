@@ -27,7 +27,8 @@ ml = [
 
 [tool.pytest.ini_options]
 addopts = "--import-mode=importlib"
-testpaths = ["services"]
+testpaths = ["services", "ml"]
+pythonpath = ["ml"]
 
 [tool.ruff]
 line-length = 100
