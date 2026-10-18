@@ -22,6 +22,11 @@ promote:
 drift:
 	uv run --group ml python ml/check_drift.py
 
+challenger:
+	uv run --group ml python ml/train_challenger.py
+ab-test:
+	uv run --group ml python ml/ab_test.py
+
 pipeline:
 	up generate bronze dbt
 
