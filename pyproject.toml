@@ -29,6 +29,7 @@ ml = [
 addopts = "--import-mode=importlib"
 testpaths = ["services", "ml"]
 pythonpath = ["ml"]
+python_files = ["test_*.py"]
 
 [tool.ruff]
 line-length = 100
