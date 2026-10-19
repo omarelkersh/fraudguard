@@ -1,7 +1,8 @@
 import duckdb
+import httpx
 import pytest
 
-from fraudguard_investigator.tools import get_account_history, get_transaction
+from fraudguard_investigator.tools import get_account_history, get_fraud_score, get_transaction
 
 
 @pytest.fixture
@@ -22,13 +23,24 @@ def con():
 def test_get_transaction_returns_the_row(con):
     tx = get_transaction(con, "tx-1")
     assert tx["account_id"] == "ACC-00000001"
-    assert tx["channel"] == "online"  # T1: what channel does tx-1 have?
+    assert tx["channel"] == "online"
 
 
 def test_unknown_transaction_returns_none(con):
-    assert get_transaction(con, "does-not-exist") is None  # T2
+    assert get_transaction(con, "does-not-exist") is None
 
 
 def test_account_history_is_newest_first_and_only_that_account(con):
     history = get_account_history(con, "ACC-00000001")
     assert [tx["transaction_id"] for tx in history] == ["tx-2", "tx-1"]
+
+
+def test_get_fraud_score_calls_the_api():
+    def fake_api(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/score"
+        return httpx.Response(
+            200, json={"fraud_probability": 0.97, "is_fraud": True, "model_version": "1"}
+        )
+
+    client = httpx.Client(base_url="http://scoring-api", transport=httpx.MockTransport(fake_api))
+    assert get_fraud_score(client, {"amount": 1.2})["fraud_probability"] == 0.97

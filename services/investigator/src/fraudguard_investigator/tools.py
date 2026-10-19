@@ -1,4 +1,5 @@
 import duckdb
+import httpx
 
 
 def get_transaction(con: duckdb.DuckDBPyConnection, transaction_id: str) -> dict | None:
@@ -29,3 +30,10 @@ def get_account_history(
     ).fetchall()
     columns = [c[0] for c in con.description]
     return [dict(zip(columns, r, strict=True)) for r in rows]
+
+
+def get_fraud_score(client: httpx.Client, features: dict) -> dict:
+    """Ask the scoring API for a fraud probability. `features` must match the API's ScoreRequest."""
+    response = client.post("/score", json=features)  # which HTTP method does /score use?
+    response.raise_for_status()  # turn 4xx/5xx errors into exceptions
+    return response.json()
