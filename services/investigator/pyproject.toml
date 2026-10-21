@@ -10,6 +10,8 @@ requires-python = ">=3.12"
 dependencies = [
     "duckdb>=1.5.6",
     "httpx>=0.28.1",
+    "langchain-ollama==1.1.0",
+    "langgraph==1.2.16",
     "mcp==2.3.0",
     "qdrant-client==1.19.1",
 ]
