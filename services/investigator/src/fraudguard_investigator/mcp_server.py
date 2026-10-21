@@ -1,7 +1,9 @@
 import os
+from typing import Annotated
 
 import duckdb
 from mcp.server import MCPServer
+from pydantic import Field
 
 from fraudguard_investigator import tools
 
@@ -18,7 +20,9 @@ def get_transaction(transaction_id: str) -> dict | None:
 
 
 @mcp.tool()
-def get_account_history(account_id: str, limit: int = 10) -> list[dict]:
+def get_account_history(
+    account_id: Annotated[str, Field(pattern=r"^ACC-\d{8}$")], limit: int = 10
+) -> list[dict]:
     """The account's most recent transactions, newest first."""
     return tools.get_account_history(con, account_id, limit)
 
