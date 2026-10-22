@@ -30,6 +30,9 @@ ab-test:
 compare-llms:
 	uv run --group ml python ml/compare_llms.py
 
+eval-agent:
+	uv run --group ml python ml/agent_eval.py
+
 pipeline:
 	up generate bronze dbt
 

@@ -50,11 +50,14 @@ SYSTEM = (
     "2) Get the account history and look for patterns: how many payments happened "
     "within 10 minutes of this one, unusually large amounts, and payments outside "
     "the home country. "
-    "3) Search the policy by describing the PATTERN you found (for example "
-    "'many small online payments within minutes'), not just the amount. "
+    "3) Search the policy by describing the pattern you ACTUALLY found in the tool "
+    "results. If the account has no other payments, say so: do not invent a pattern. "
     "4) Write a short report: verdict (suspicious / not suspicious), evidence with "
     "transaction IDs, amounts and times, and the policy rule IDs that apply. "
+    "Cite a rule ONLY if all of its conditions are met by the evidence (amounts, "
+    "channel, country, time window). If no rule fits, the verdict is not suspicious. "
     "Only state facts returned by tools."
+    " End the report with one line: 'Rules: ' followed by the cited rule IDs, or 'Rules: none'."
 )
 
 
