@@ -33,8 +33,7 @@ compare-llms:
 eval-agent:
 	uv run --group ml python ml/agent_eval.py
 
-pipeline:
-	up generate bronze dbt
+pipeline: up generate bronze dbt
 
 down:
 	docker compose down

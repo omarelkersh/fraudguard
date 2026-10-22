@@ -2,7 +2,12 @@ import duckdb
 import httpx
 import pytest
 
-from fraudguard_investigator.tools import get_account_history, get_fraud_score, get_transaction
+from fraudguard_investigator.tools import (
+    get_account_history,
+    get_account_profile,
+    get_fraud_score,
+    get_transaction,
+)
 
 
 @pytest.fixture
@@ -44,3 +49,15 @@ def test_get_fraud_score_calls_the_api():
 
     client = httpx.Client(base_url="http://scoring-api", transport=httpx.MockTransport(fake_api))
     assert get_fraud_score(client, {"amount": 1.2})["fraud_probability"] == 0.97
+
+
+def test_account_profile_uses_only_earlier_payments(con):
+    profile = get_account_profile(con, "tx-2")
+    assert profile["past_transactions"] == 1  # only tx-1 is before tx-2
+    assert profile["home_country"] == "DE"
+
+
+def test_first_payment_has_empty_profile(con):
+    profile = get_account_profile(con, "tx-1")
+    assert profile["past_transactions"] == 0
+    assert profile["account_id"] == "ACC-00000001"  # still known, so the agent can continue

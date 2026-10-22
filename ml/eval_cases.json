@@ -1,8 +1,8 @@
 [
-  {"case": "card_testing", "transaction_id": "24df6dcc-490c-4f97-ab0c-456b8ab20bf4",
-   "suspicious": true, "must_cite": ["R1"], "must_not_cite": ["R4"]},
-  {"case": "foreign_atm", "transaction_id": "fe7ee362-8a89-40f0-9052-91d3b34c6c73",
-   "suspicious": true, "must_cite": [], "must_not_cite": ["R1","R4"]},
-  {"case": "normal", "transaction_id": "e97fb025-a2e1-4798-ab65-450b5c75352c",
+  {"case": "card_testing", "transaction_id": "962cab04-d129-4420-ae65-d64597969524",
+   "suspicious": true, "must_cite": ["R1"], "must_not_cite": ["R2", "R4"]},
+  {"case": "foreign_atm", "transaction_id": "8b74fba2-9512-47dd-aacd-61677ccf530a",
+   "suspicious": true, "must_cite": ["R2"], "must_not_cite": ["R1", "R4"]},
+  {"case": "normal", "transaction_id": "01166f66-2848-4e21-a4ad-f9170953cc12",
    "suspicious": false, "must_cite": [], "must_not_cite": ["R1", "R2", "R4"]}
 ]

@@ -45,11 +45,14 @@ def mcp_to_langchain(session: ClientSession, listed) -> list[StructuredTool]:
 
 
 SYSTEM = (
-    "You are a fraud investigator. Steps: "
+    "You are a fraud investigator. Call ONE tool at a time and use IDs exactly "
+    "as tools return them. Steps: "
     "1) Get the transaction. "
-    "2) Get the account history and look for patterns: how many payments happened "
-    "within 10 minutes of this one, unusually large amounts, and payments outside "
-    "the home country. "
+    "2) Get the account profile (home country, typical amount), then the account "
+    "history using the account_id from the profile. "
+    "Compare this payment with them: how many payments happened within 10 minutes, "
+    "how many times larger than the typical amount it is, and whether the country "
+    "differs from the home country. "
     "3) Search the policy by describing the pattern you ACTUALLY found in the tool "
     "results. If the account has no other payments, say so: do not invent a pattern. "
     "4) Write a short report: verdict (suspicious / not suspicious), evidence with "

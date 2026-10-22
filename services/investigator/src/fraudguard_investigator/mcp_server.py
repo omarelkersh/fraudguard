@@ -27,5 +27,11 @@ def get_account_history(
     return tools.get_account_history(con, account_id, limit)
 
 
+@mcp.tool()
+def get_account_profile(transaction_id: str) -> dict:
+    """Account ID, home country and typical amount, from payments BEFORE this transaction."""
+    return tools.get_account_profile(con, transaction_id)
+
+
 if __name__ == "__main__":
     mcp.run()
