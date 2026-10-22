@@ -58,14 +58,15 @@ SYSTEM = (
 )
 
 
-async def investigate(transaction_id: str) -> str:
+async def investigate(transaction_id: str, model: str = "qwen3:8b") -> dict:
+    start = time.perf_counter()
     server = StdioServerParameters(
         command=sys.executable, args=["-m", "fraudguard_investigator.mcp_server"]
     )
     async with stdio_client(server) as (read, write), ClientSession(read, write) as session:
         await session.initialize()
         tools = mcp_to_langchain(session, await session.list_tools()) + [search_policy]
-        llm = ChatOllama(model="qwen3:8b", temperature=0, reasoning=False).bind_tools(tools)
+        llm = ChatOllama(model=model, temperature=0, reasoning=False).bind_tools(tools)
 
         async def agent_node(state: MessagesState) -> dict:
             return {"messages": [await llm.ainvoke(state["messages"])]}
@@ -88,14 +89,22 @@ async def investigate(transaction_id: str) -> str:
             {"recursion_limit": 12},  # safety stop: max steps
         )
 
-        for message in result["messages"]:
-            for call in getattr(message, "tool_calls", []) or []:
-                print("TOOL CALL:", call["name"], call["args"])
-
-        return result["messages"][-1].content
+        messages = result["messages"]
+        usage = [m.usage_metadata for m in messages if getattr(m, "usage_metadata", None)]
+        return {
+            "model": model,
+            "report": messages[-1].content,
+            "seconds": round(time.perf_counter() - start, 1),
+            "input_tokens": sum(u["input_tokens"] for u in usage),
+            "output_tokens": sum(u["output_tokens"] for u in usage),
+            "tool_calls": [
+                c["name"] for m in messages for c in (getattr(m, "tool_calls", None) or [])
+            ],
+        }
 
 
 if __name__ == "__main__":
-    start = time.time()
-    print(asyncio.run(investigate(sys.argv[1])))
-    print(f"--- {time.time() - start:.1f}s")
+    model = sys.argv[2] if len(sys.argv) > 2 else "qwen3:8b"
+    outcome = asyncio.run(investigate(sys.argv[1], model))
+    print(outcome["report"])
+    print({k: v for k, v in outcome.items() if k != "report"})
