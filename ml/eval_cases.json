@@ -1,0 +1,8 @@
+[
+  {"case": "card_testing", "transaction_id": "24df6dcc-490c-4f97-ab0c-456b8ab20bf4",
+   "suspicious": true, "must_cite": ["R1"], "must_not_cite": ["R4"]},
+  {"case": "foreign_atm", "transaction_id": "fe7ee362-8a89-40f0-9052-91d3b34c6c73",
+   "suspicious": true, "must_cite": [], "must_not_cite": ["R1","R4"]},
+  {"case": "normal", "transaction_id": "e97fb025-a2e1-4798-ab65-450b5c75352c",
+   "suspicious": false, "must_cite": [], "must_not_cite": ["R1", "R2", "R4"]}
+]
