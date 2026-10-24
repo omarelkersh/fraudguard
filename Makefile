@@ -39,6 +39,17 @@ index-policy:
 investigate:
 	uv run --all-packages python -m fraudguard_investigator.agent $(TX)
 
+lora-data:
+	uv run --group ml python ml/lora/build_dataset.py
+
+lora-train:
+	uv run --group lora python -m mlx_lm lora --model mlx-community/Qwen3-1.7B-4bit \
+		--train --data ml/lora/data --adapter-path ml/lora/adapters \
+		--iters 600 --batch-size 4 --mask-prompt --steps-per-eval 100 --val-batches 20
+
+lora-eval:
+	uv run --group lora --group ml python ml/lora/eval_lora.py
+
 pipeline: up generate bronze dbt
 
 down:
