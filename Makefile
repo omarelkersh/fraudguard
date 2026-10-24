@@ -33,6 +33,12 @@ compare-llms:
 eval-agent:
 	uv run --group ml python ml/agent_eval.py
 
+index-policy:
+	uv run --all-packages python -c "from pathlib import Path; from fraudguard_investigator.agent import qdrant, ollama; from fraudguard_investigator.rag import index_policy; print(index_policy(qdrant, ollama, Path('knowledge/aml_policy.md').read_text()), 'chunks')"
+
+investigate:
+	uv run --all-packages python -m fraudguard_investigator.agent $(TX)
+
 pipeline: up generate bronze dbt
 
 down:
