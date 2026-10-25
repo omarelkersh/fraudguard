@@ -5,7 +5,7 @@ metadata:
   labels:
     app: scoring-api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: scoring-api
@@ -20,9 +20,9 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
-          env:
-            - name: MLFLOW_TRACKING_URI
-              value: http://host.docker.internal:5050
+          envFrom:
+            - configMapRef:
+                name: scoring-api-config
           readinessProbe:
             httpGet:
               path: /health
