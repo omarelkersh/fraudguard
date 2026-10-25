@@ -1,0 +1,5 @@
+replicas: 2
+image:
+  repository: fraudguard-scoring-api
+  tag: "0.1.0"
+mlflowTrackingUri: http://host.docker.internal:5050
