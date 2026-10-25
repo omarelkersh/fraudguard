@@ -55,8 +55,7 @@ k8s-up:
 	docker compose build scoring-api
 	docker tag fraudguard-scoring-api:latest fraudguard-scoring-api:0.1.0
 	kind load docker-image fraudguard-scoring-api:0.1.0 --name fraudguard
-	kubectl apply -f infra/k8s/
-	kubectl rollout status deploy/scoring-api
+	helm upgrade --install scoring-api infra/helm/scoring-api --wait
 
 k8s-down:
 	kind delete cluster --name fraudguard
