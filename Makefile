@@ -50,6 +50,17 @@ lora-train:
 lora-eval:
 	uv run --group lora --group ml python ml/lora/eval_lora.py
 
+k8s-up:
+	kind get clusters | grep -q fraudguard || kind create cluster --name fraudguard
+	docker compose build scoring-api
+	docker tag fraudguard-scoring-api:latest fraudguard-scoring-api:0.1.0
+	kind load docker-image fraudguard-scoring-api:0.1.0 --name fraudguard
+	kubectl apply -f infra/k8s/
+	kubectl rollout status deploy/scoring-api
+
+k8s-down:
+	kind delete cluster --name fraudguard
+
 pipeline: up generate bronze dbt
 
 down:
