@@ -5,6 +5,7 @@ repos:
       - id: trailing-whitespace      # removes spaces at the end of lines
       - id: end-of-file-fixer        # makes every file end with exactly one newline
       - id: check-yaml               # YAML files must be valid
+        args: [--allow-multiple-documents]
       - id: check-toml               # TOML files (pyproject.toml) must be valid
       - id: check-added-large-files  # blocks accidentally committing big files (e.g., datasets)
 
