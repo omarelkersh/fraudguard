@@ -224,3 +224,8 @@ mlruns/
 # generated LoRA dataset and adapters
 ml/lora/data/
 ml/lora/adapters/
+
+# Terraform: provider downloads and state stay local
+.terraform/
+*.tfstate
+*.tfstate.*
