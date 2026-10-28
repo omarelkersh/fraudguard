@@ -1,0 +1,41 @@
+artifact_path: mlflow-artifacts:/1/models/m-95fa1d59bf92490ab61f88303aaa6e64/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.12.15
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.1
+    skops_trusted_types:
+    - sklearn.tree._tree.Tree
+is_signature_from_type_hint: false
+mlflow_version: 3.17.1
+model_id: m-95fa1d59bf92490ab61f88303aaa6e64
+model_size_bytes: 3991628
+model_uuid: m-95fa1d59bf92490ab61f88303aaa6e64
+prompts: null
+run_id: aedcd713d9d34c349e4e730556e1327b
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
+signature:
+  inputs: '[{"type": "double", "name": "amount", "required": true}, {"type": "double",
+    "name": "amount_vs_account_avg", "required": true}, {"type": "double", "name":
+    "tx_last_10min", "required": true}, {"type": "double", "name": "is_foreign", "required":
+    true}, {"type": "double", "name": "channel_atm", "required": true}, {"type": "double",
+    "name": "channel_card_present", "required": true}, {"type": "double", "name":
+    "channel_online", "required": true}, {"type": "double", "name": "channel_transfer",
+    "required": true}]'
+  outputs: '[{"type": "long", "required": true}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2026-10-24 15:02:46.238249'

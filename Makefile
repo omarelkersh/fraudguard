@@ -50,6 +50,11 @@ lora-train:
 lora-eval:
 	uv run --group lora --group ml python ml/lora/eval_lora.py
 
+export-model:  ## Copy the MLflow champion into the scoring API image folder
+	rm -rf services/scoring-api/model
+	uv run python -c "import mlflow; mlflow.set_tracking_uri('http://localhost:5050'); \
+	mlflow.artifacts.download_artifacts(artifact_uri='models:/fraud-detector@champion', dst_path='services/scoring-api/model')"
+
 k8s-up:
 	kind get clusters | grep -q fraudguard || kind create cluster --name fraudguard
 	docker compose build scoring-api

@@ -1,0 +1,1 @@
+{"columns": ["amount", "amount_vs_account_avg", "tx_last_10min", "is_foreign", "channel_atm", "channel_card_present", "channel_online", "channel_transfer"], "data": [[86.93, 1.3695902463854182, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0], [145.35, 1.1147266183503426, 2.0, 1.0, 0.0, 1.0, 0.0, 0.0], [87.75, 1.2092082027621545, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0]]}
