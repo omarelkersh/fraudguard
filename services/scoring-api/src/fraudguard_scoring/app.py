@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 import mlflow
 import pandas as pd
+import yaml
 from fastapi import FastAPI
 from prometheus_client import Counter, Histogram, make_asgi_app
 
@@ -20,14 +21,22 @@ SCORES = Histogram(
 state: dict = {}
 
 
+MODEL_URI = os.environ.get("MODEL_URI")  # cloud: a model folder baked into the image
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Runs once at startup: load the champion model from MLflow."""
-    mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5050"))
-    state["model"] = mlflow.sklearn.load_model(f"models:/{MODEL_NAME}@champion")
-    state["version"] = (
-        mlflow.MlflowClient().get_model_version_by_alias(MODEL_NAME, "champion").version
-    )
+    """Runs once at startup: load the baked-in model (MODEL_URI) or the MLflow champion."""
+    if MODEL_URI:
+        state["model"] = mlflow.sklearn.load_model(MODEL_URI)
+        with open(f"{MODEL_URI}/registered_model_meta") as f:
+            state["version"] = str(yaml.safe_load(f)["model_version"])
+    else:
+        mlflow.set_tracking_uri(os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5050"))
+        state["model"] = mlflow.sklearn.load_model(f"models:/{MODEL_NAME}@champion")
+        state["version"] = (
+            mlflow.MlflowClient().get_model_version_by_alias(MODEL_NAME, "champion").version
+        )
     yield
 
 
