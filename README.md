@@ -29,8 +29,8 @@ flowchart LR
 | 1 | Data platform: Kafka → Spark → Delta Lake → dbt | ✅ Done |
 | 2 | ML + MLOps: MLflow, FastAPI, monitoring, A/B test | ✅ Done |
 | 3 | AI investigator: LangGraph, MCP, RAG, LLM evaluation | ✅ Done |
-| 4 | Cloud: Kubernetes, Terraform, Azure | ⏳ Next |
-| 5 | Analytics dashboards | Planned |
+| 4 | Cloud: Kubernetes, Terraform, Azure | ✅ Done |
+| 5 | Analytics dashboards | ⏳ Next |
 
 ## Tech stack (so far)
 
@@ -53,6 +53,10 @@ flowchart LR
 - **Qdrant**: RAG over the bank's (fictional) AML policy
 - **LangGraph**: tool-calling investigator agent that writes a verdict with evidence and cited policy rules
 - **LLM evaluation**: a fixed test set, deterministic checks (verdict, rules, hallucinated IDs), a local LLM-as-judge, and a model comparison (latency, tokens, estimated API cost), all logged to MLflow
+- **MLX-LM LoRA**: a fine-tuned Qwen3-1.7B that learned the policy rules from facts alone (98% vs 52% for the prompted base model)
+- **Kubernetes** (kind) and **Helm**: the scoring API as a chart with probes, resource limits, a ConfigMap and rollbacks
+- **GHCR**: CI publishes the API image on every merge to `main`, tagged by commit sha
+- **Terraform + Azure Container Apps**: the API deployed from the published image with the model baked in, scale to zero, created and destroyed with one command
 
 ## Quickstart
 
@@ -75,10 +79,12 @@ docker compose up -d qdrant   # AI investigator (needs Ollama: ollama pull qwen3
 make index-policy             # embed the AML policy into Qdrant
 make investigate TX=<transaction_id>
 make eval-agent               # score the agent on the test set (MLflow experiment agent-eval)
+make k8s-up                   # run the API on a local Kubernetes cluster with Helm (needs kind + helm)
+make export-model             # bake the MLflow champion into the API image (for the cloud)
 make down                     # stop everything
 ```
 
-Write-ups: [A/B test](docs/ab_test.md), [LLM comparison](docs/llm_comparison.md), [agent evaluation](docs/agent_eval.md).
+Write-ups: [A/B test](docs/ab_test.md), [LLM comparison](docs/llm_comparison.md), [agent evaluation](docs/agent_eval.md), [LoRA distillation](docs/lora_distill.md), [Azure deployment](docs/azure_deploy.md).
 
 ## Project structure
 
@@ -92,8 +98,8 @@ knowledge/            # fictional AML policy used for RAG
 pipelines/
   dbt/                # dbt staging, star schema and ML training set with data-quality tests
 ml/                   # training, gated promotion, drift (PSI), A/B test, LLM comparison and agent eval
-infra/                # Prometheus config, Grafana datasource + dashboard as code
-docs/                 # A/B test, LLM comparison and agent evaluation write-ups
+infra/                # Prometheus + Grafana config, Helm chart, Terraform for Azure
+docs/                 # write-ups: A/B test, LLM comparison, agent eval, LoRA, Azure deploy
 compose.yaml          # local stack: Kafka, S3 storage, Spark, MLflow, API, Prometheus, Grafana, Qdrant
 Makefile              # one-command pipeline and ML workflow
 .github/workflows/    # CI pipeline
