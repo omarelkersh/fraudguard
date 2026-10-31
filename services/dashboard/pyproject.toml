@@ -1,0 +1,20 @@
+[project]
+name = "fraudguard-dashboard"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Omar Elkersh", email = "85870525+omarelkersh@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.6",
+    "streamlit==1.65.0",
+]
+
+[project.scripts]
+fraudguard-dashboard = "fraudguard_dashboard:main"
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"

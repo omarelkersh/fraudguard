@@ -55,6 +55,10 @@ export-model:  ## Copy the MLflow champion into the scoring API image folder
 	uv run python -c "import mlflow; mlflow.set_tracking_uri('http://localhost:5050'); \
 	mlflow.artifacts.download_artifacts(artifact_uri='models:/fraud-detector@champion', dst_path='services/scoring-api/model')"
 
+dashboard:  ## Fraud dashboard at http://localhost:8501
+	uv run --package fraudguard-dashboard streamlit run services/dashboard/src/fraudguard_dashboard/app.py \
+		--server.headless true --browser.gatherUsageStats false
+
 k8s-up:
 	kind get clusters | grep -q fraudguard || kind create cluster --name fraudguard
 	docker compose build scoring-api
