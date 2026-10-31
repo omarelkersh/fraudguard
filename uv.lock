@@ -1140,12 +1140,14 @@ version = "0.1.0"
 source = { editable = "services/dashboard" }
 dependencies = [
     { name = "duckdb" },
+    { name = "fraudguard-investigator" },
     { name = "streamlit" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "duckdb", specifier = ">=1.5.6" },
+    { name = "fraudguard-investigator", editable = "services/investigator" },
     { name = "streamlit", specifier = "==1.65.0" },
 ]
 
