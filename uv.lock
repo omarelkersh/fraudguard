@@ -1176,6 +1176,7 @@ dependencies = [
     { name = "langchain-ollama" },
     { name = "langgraph" },
     { name = "mcp" },
+    { name = "pytz" },
     { name = "qdrant-client" },
 ]
 
@@ -1186,6 +1187,7 @@ requires-dist = [
     { name = "langchain-ollama", specifier = "==1.1.0" },
     { name = "langgraph", specifier = "==1.2.16" },
     { name = "mcp", specifier = "==2.3.0" },
+    { name = "pytz", specifier = ">=2026.5" },
     { name = "qdrant-client", specifier = "==1.19.1" },
 ]
 

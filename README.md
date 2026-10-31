@@ -30,9 +30,9 @@ flowchart LR
 | 2 | ML + MLOps: MLflow, FastAPI, monitoring, A/B test | ✅ Done |
 | 3 | AI investigator: LangGraph, MCP, RAG, LLM evaluation | ✅ Done |
 | 4 | Cloud: Kubernetes, Terraform, Azure | ✅ Done |
-| 5 | Analytics dashboards | ⏳ Next |
+| 5 | Analytics dashboards | ✅ Done |
 
-## Tech stack (so far)
+## Tech stack
 
 - **Python 3.12** with **uv** workspaces: one monorepo, one lockfile, one package per service
 - **Pydantic v2**: transaction data contract with validation at the source
@@ -57,6 +57,7 @@ flowchart LR
 - **Kubernetes** (kind) and **Helm**: the scoring API as a chart with probes, resource limits, a ConfigMap and rollbacks
 - **GHCR**: CI publishes the API image on every merge to `main`, tagged by commit sha
 - **Terraform + Azure Container Apps**: the API deployed from the published image with the model baked in, scale to zero, created and destroyed with one command
+- **Streamlit**: a fraud dashboard over a tested dbt mart, plus a transaction explorer with a live model score and an AI investigation
 
 ## Quickstart
 
@@ -81,10 +82,11 @@ make investigate TX=<transaction_id>
 make eval-agent               # score the agent on the test set (MLflow experiment agent-eval)
 make k8s-up                   # run the API on a local Kubernetes cluster with Helm (needs kind + helm)
 make export-model             # bake the MLflow champion into the API image (for the cloud)
+docker compose up -d --build dashboard   # fraud dashboard: http://localhost:8501 (or: make dashboard)
 make down                     # stop everything
 ```
 
-Write-ups: [A/B test](docs/ab_test.md), [LLM comparison](docs/llm_comparison.md), [agent evaluation](docs/agent_eval.md), [LoRA distillation](docs/lora_distill.md), [Azure deployment](docs/azure_deploy.md).
+Write-ups: [A/B test](docs/ab_test.md), [LLM comparison](docs/llm_comparison.md), [agent evaluation](docs/agent_eval.md), [LoRA distillation](docs/lora_distill.md), [Azure deployment](docs/azure_deploy.md), [fraud dashboard](docs/dashboard.md).
 
 ## Project structure
 
@@ -94,12 +96,13 @@ services/
   streaming/          # Spark Structured Streaming jobs: Kafka → Delta bronze tables
   scoring-api/        # FastAPI scoring service with Prometheus metrics (tests use a fake model)
   investigator/       # MCP server, RAG and the LangGraph investigator agent
+  dashboard/          # Streamlit fraud dashboard and transaction explorer
 knowledge/            # fictional AML policy used for RAG
 pipelines/
   dbt/                # dbt staging, star schema and ML training set with data-quality tests
 ml/                   # training, gated promotion, drift (PSI), A/B test, LLM comparison and agent eval
 infra/                # Prometheus + Grafana config, Helm chart, Terraform for Azure
-docs/                 # write-ups: A/B test, LLM comparison, agent eval, LoRA, Azure deploy
+docs/                 # write-ups: A/B test, LLM comparison, agent eval, LoRA, Azure deploy, dashboard
 compose.yaml          # local stack: Kafka, S3 storage, Spark, MLflow, API, Prometheus, Grafana, Qdrant
 Makefile              # one-command pipeline and ML workflow
 .github/workflows/    # CI pipeline
@@ -107,7 +110,7 @@ Makefile              # one-command pipeline and ML workflow
 
 ## Engineering practices
 
-- **Data contracts:** every transaction is validated with Pydantic at the source (ID formats, positive amounts with 2 decimal places, timezone-aware timestamps), covered by unit tests including boundary cases (55 tests across the repo).
+- **Data contracts:** every transaction is validated with Pydantic at the source (ID formats, positive amounts with 2 decimal places, timezone-aware timestamps), covered by unit tests including boundary cases (57 tests across the repo).
 - **No label leakage:** fraud labels arrive on a separate topic, days later (chargebacks); features are point-in-time correct and models are evaluated on a time-based split with PR-AUC.
 - **Data quality in the warehouse:** 12 dbt tests (not_null, unique, accepted_values, relationships); staging deduplicates Kafka's at-least-once deliveries.
 - **Fair model promotion:** a new model becomes `champion` only if it beats the current one on the same, newest test set.
