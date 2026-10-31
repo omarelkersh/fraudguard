@@ -113,6 +113,23 @@ services:
     volumes:
       - qdrant-data:/qdrant/storage
 
+  dashboard:
+    build:
+      context: .
+      dockerfile: services/dashboard/Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./pipelines/dbt/warehouse.duckdb:/data/warehouse.duckdb:ro   # read-only, like the code
+    environment:
+      WAREHOUSE_PATH: /data/warehouse.duckdb
+      SCORING_API_URL: http://scoring-api:8000            # the Compose service name
+      QDRANT_URL: http://qdrant:6333
+      OLLAMA_HOST: http://host.docker.internal:11434   # Ollama runs on the Mac, not in Compose
+    depends_on:
+      - scoring-api
+      - qdrant
+
 
 volumes:
   kafka-data:

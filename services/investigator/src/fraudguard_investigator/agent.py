@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 import time
 
@@ -14,8 +15,8 @@ from qdrant_client import QdrantClient
 
 from fraudguard_investigator import rag
 
-qdrant = QdrantClient(url="http://localhost:6333")
-ollama = httpx.Client(base_url="http://localhost:11434", timeout=120)
+qdrant = QdrantClient(url=os.environ.get("QDRANT_URL", "http://localhost:6333"))
+ollama = httpx.Client(base_url=os.environ.get("OLLAMA_HOST", "http://localhost:11434"), timeout=120)
 
 
 @tool
@@ -67,7 +68,10 @@ SYSTEM = (
 async def investigate(transaction_id: str, model: str = "qwen3:8b") -> dict:
     start = time.perf_counter()
     server = StdioServerParameters(
-        command=sys.executable, args=["-m", "fraudguard_investigator.mcp_server"]
+        command=sys.executable,
+        args=["-m", "fraudguard_investigator.mcp_server"],
+        # MCP passes only a safe env subset to the server, so hand over the warehouse path
+        env={"WAREHOUSE_PATH": os.environ.get("WAREHOUSE_PATH", "pipelines/dbt/warehouse.duckdb")},
     )
     async with stdio_client(server) as (read, write), ClientSession(read, write) as session:
         await session.initialize()
