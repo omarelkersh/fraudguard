@@ -31,6 +31,7 @@ terraform -chdir=infra/terraform destroy -var image_tag=sha-535a83e
 | `/health`, cold start | `model_version: "4"` in **15.2 s** |
 | `/score`, warm, card-testing pattern | `fraud_probability: 0.99996`, `is_fraud: true` in **1.3 s** |
 | `destroy` | 3 resources removed in about 3 minutes; `az group exists` → `false` |
+| **Actual cost** (Cost Management, month to date) | **€0.0036**, all from Azure Container Apps; 0 resources left afterwards |
 
 ## Findings
 
